@@ -1,0 +1,189 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "E1_CRM_Pro",
+      "archetype": "The Executive Suite",
+      "principles": [
+        "Fusion over Imitation: Mix Swiss clarity with SaaS utility.",
+        "Emotion First: Trust, Efficiency, and Control.",
+        "Content is King: Data density without clutter.",
+        "Zoom In: Focus on the metric that matters.",
+        "Negative Space: Use whitespace to group data, not just lines."
+      ]
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Outfit, sans-serif",
+        "body": "Geist Sans, Inter, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-4xl font-bold tracking-tight",
+        "h2": "text-3xl font-semibold tracking-tight",
+        "h3": "text-2xl font-semibold tracking-tight",
+        "h4": "text-xl font-medium tracking-tight",
+        "body_lg": "text-lg leading-relaxed",
+        "body_base": "text-base leading-relaxed",
+        "body_sm": "text-sm leading-normal",
+        "caption": "text-xs text-muted-foreground uppercase tracking-wider"
+      },
+      "imports": [
+        "@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');",
+        "@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');"
+      ]
+    },
+    "colors": {
+      "palette": {
+        "light": {
+          "background": "#F9FAFB",
+          "foreground": "#0F172A",
+          "card": "#FFFFFF",
+          "card_foreground": "#0F172A",
+          "popover": "#FFFFFF",
+          "popover_foreground": "#0F172A",
+          "primary": "#0F172A",
+          "primary_foreground": "#F8FAFC",
+          "secondary": "#F1F5F9",
+          "secondary_foreground": "#0F172A",
+          "muted": "#F1F5F9",
+          "muted_foreground": "#64748B",
+          "accent": "#F1F5F9",
+          "accent_foreground": "#0F172A",
+          "destructive": "#EF4444",
+          "destructive_foreground": "#F8FAFC",
+          "border": "#E2E8F0",
+          "input": "#E2E8F0",
+          "ring": "#0F172A"
+        },
+        "dark": {
+          "background": "#09090B",
+          "foreground": "#F8FAFC",
+          "card": "#18181B",
+          "card_foreground": "#F8FAFC",
+          "popover": "#18181B",
+          "popover_foreground": "#F8FAFC",
+          "primary": "#F8FAFC",
+          "primary_foreground": "#09090B",
+          "secondary": "#27272A",
+          "secondary_foreground": "#F8FAFC",
+          "muted": "#27272A",
+          "muted_foreground": "#A1A1AA",
+          "accent": "#27272A",
+          "accent_foreground": "#F8FAFC",
+          "destructive": "#7F1D1D",
+          "destructive_foreground": "#F8FAFC",
+          "border": "#27272A",
+          "input": "#27272A",
+          "ring": "#D4D4D8"
+        }
+      },
+      "chart_colors": [
+        "#0F172A",
+        "#334155",
+        "#64748B",
+        "#94A3B8",
+        "#CBD5E1"
+      ]
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-8 lg:p-12",
+      "section_gap": "gap-8",
+      "item_gap": "gap-4",
+      "radius": "rounded-md"
+    },
+    "layout": {
+      "grid_mode": "Bento Mode B (High Density)",
+      "sidebar_width": "w-64",
+      "max_width": "max-w-7xl mx-auto"
+    },
+    "components": {
+      "buttons": {
+        "style": "sharp or slightly rounded (rounded-md)",
+        "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+        "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        "ghost": "hover:bg-accent hover:text-accent-foreground"
+      },
+      "cards": {
+        "style": "flat with subtle border, no shadow by default",
+        "hover": "hover:border-primary/20 transition-colors duration-200"
+      },
+      "inputs": {
+        "style": "bg-background border-input focus:ring-1 focus:ring-ring"
+      }
+    },
+    "motion": {
+      "transitions": "transition-all duration-200 ease-in-out",
+      "page_transition": {
+        "initial": { "opacity": 0, "y": 10 },
+        "animate": { "opacity": 1, "y": 0 },
+        "exit": { "opacity": 0, "y": -10 }
+      }
+    }
+  },
+  "assets": {
+    "images": {
+      "user_avatars": [
+        {
+          "url": "https://images.unsplash.com/photo-1655249481446-25d575f1c054?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMGhlYWRzaG90JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY4ODk0MjY0fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Professional woman in blue dress",
+          "category": "avatar"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1762522927402-f390672558d8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMGhlYWRzaG90JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY4ODk0MjY0fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Man in white shirt smiling",
+          "category": "avatar"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1689600944138-da3b150d9cb8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMGhlYWRzaG90JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY4ODk0MjY0fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Woman in front of sculpture",
+          "category": "avatar"
+        }
+      ]
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "stroke-width-1.5"
+    }
+  },
+  "instructions_to_main_agent": {
+    "general": [
+      "Implement the 'Executive Suite' theme strictly.",
+      "Use 'Outfit' for all headings and 'Geist Sans' (or Inter) for body text.",
+      "Ensure Dark Mode is manually toggleable and persists preference.",
+      "Use Shadcn components for all interactive elements but override styles to match the design system.",
+      "Implement real-time updates using WebSockets (mock if backend not ready).",
+      "Use 'sonner' for all toast notifications.",
+      "Ensure all interactive elements have 'data-testid' attributes."
+    ],
+    "layout_rules": [
+      "Use a fixed sidebar layout for the main app.",
+      "Dashboard must use a Bento Grid (Mode B) for high density.",
+      "Leads page must support both List and Kanban views.",
+      "Activities page should use a vertical timeline layout."
+    ],
+    "anti_patterns": [
+      "DO NOT use gradients for backgrounds.",
+      "DO NOT use 'Inter' for headings.",
+      "DO NOT center-align dashboard widgets.",
+      "DO NOT use generic 'blue' for primary actions; use the defined Slate/Zinc palette."
+    ]
+  },
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) for overlays only.",
+    "You MUST NOT apply universal transition. Eg: `transition: all`. This results in breaking transforms.",
+    "You MUST NOT center align the app container.",
+    "Always use modern button styles like sharp or slightly rounded.",
+    "NEVER use AI assistant Emoji characters for icons.",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories = main agent will use placeholder text which is FORBIDDEN",
+    "Prioritize using pre-existing components from src/components/ui when applicable",
+    "Components MUST use named exports",
+    "Pages MUST use default exports",
+    "Use `sonner` for toasts"
+  ]
+}
