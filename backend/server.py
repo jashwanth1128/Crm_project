@@ -251,7 +251,66 @@ class AuditLog(BaseModel):
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-# ... (omitted lines)
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if user is None:
+        raise credentials_exception
+    return user
+
+async def create_audit_log(action: str, entity: str, entity_id: str, user_id: str, changes: Optional[dict] = None):
+    log = {
+        "id": str(uuid.uuid4()),
+        "action": action,
+        "entity": entity,
+        "entity_id": entity_id,
+        "changes": changes,
+        "user_id": user_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.audit_logs.insert_one(log)
+
+async def create_notification(user_id: str, type: NotificationType, title: str, message: str, metadata: Optional[dict] = None):
+    notification = {
+        "id": str(uuid.uuid4()),
+        "type": type.value,
+        "title": title,
+        "message": message,
+        "is_read": False,
+        "user_id": user_id,
+        "metadata": metadata,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.notifications.insert_one(notification)
+    try:
+        await manager.send_personal_message({"type": "notification", "data": notification}, user_id)
+    except:
+        pass
 
 @api_router.post("/auth/register", response_model=Token)
 async def register(user_data: UserCreate):
