@@ -251,70 +251,8 @@ class AuditLog(BaseModel):
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+# ... (omitted lines)
 
-def create_access_token(data: dict) -> str:
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
-    token = credentials.credentials
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user = await db.users.find_one({"id": user_id}, {"_id": 0})
-    if user is None:
-        raise HTTPException(status_code=401, detail="User not found")
-    return user
-
-async def require_role(required_roles: List[RoleEnum]):
-    async def role_checker(current_user: dict = Depends(get_current_user)):
-        if current_user["role"] not in required_roles:
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
-        return current_user
-    return role_checker
-
-async def create_audit_log(action: str, entity: str, entity_id: str, user_id: str, changes: Optional[Dict] = None):
-    log = {
-        "id": str(uuid.uuid4()),
-        "action": action,
-        "entity": entity,
-        "entity_id": entity_id,
-        "changes": changes,
-        "user_id": user_id,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.audit_logs.insert_one(log)
-
-async def create_notification(user_id: str, notification_type: NotificationType, title: str, message: str, metadata: Optional[Dict] = None):
-    notification = {
-        "id": str(uuid.uuid4()),
-        "type": notification_type,
-        "title": title,
-        "message": message,
-        "is_read": False,
-        "user_id": user_id,
-        "metadata": metadata,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.notifications.insert_one(notification)
-    
-    # Send via WebSocket
-    await manager.send_personal_message({
-        "type": "notification",
-        "data": notification
-    }, user_id)
-
-# Auth routes
 @api_router.post("/auth/register", response_model=Token)
 async def register(user_data: UserCreate):
     # Check if user exists
@@ -324,31 +262,7 @@ async def register(user_data: UserCreate):
     
     # Create user
     user_dict = user_data.model_dump()
-    user_dict["id"] = str(uuid.uuid4())
-    user_dict["password"] = get_password_hash(user_data.password)
-    user_dict["status"] = UserStatus.ACTIVE
-    user_dict["is_online"] = False
-    user_dict["last_seen"] = datetime.now(timezone.utc).isoformat()
-    user_dict["dark_mode"] = False
-    user_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    user_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
-    
-    await db.users.insert_one(user_dict)
-    
-    # Create token
-    access_token = create_access_token({"sub": user_dict["id"]})
-    
-    # Remove password from response
-    user_dict.pop("password")
-    user_dict["last_seen"] = datetime.fromisoformat(user_dict["last_seen"])
-    user_dict["created_at"] = datetime.fromisoformat(user_dict["created_at"])
-    user_dict["updated_at"] = datetime.fromisoformat(user_dict["updated_at"])
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": user_dict
-    }
+    # ...
 
 @api_router.post("/auth/login", response_model=Token)
 async def login(login_data: LoginRequest):
@@ -358,6 +272,7 @@ async def login(login_data: LoginRequest):
     
     if user["status"] != UserStatus.ACTIVE:
         raise HTTPException(status_code=401, detail="Account is not active")
+
     
     # Update last seen
     await db.users.update_one(

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 const WebSocketContext = createContext(null);
@@ -12,34 +11,37 @@ export const WebSocketProvider = ({ children }) => {
   useEffect(() => {
     if (!token) {
       if (socket) {
-        socket.disconnect();
+        socket.close();
         setSocket(null);
         setConnected(false);
       }
       return;
     }
 
-    const wsUrl = process.env.REACT_APP_BACKEND_URL.replace('https', 'wss').replace('http', 'ws');
-    const newSocket = io(wsUrl, {
-      path: '/ws',
-      transports: ['websocket'],
-      auth: { token }
-    });
+    const wsUrl = process.env.REACT_APP_BACKEND_URL
+      .replace('https', 'wss')
+      .replace('http', 'ws');
 
-    newSocket.on('connect', () => {
+    const ws = new WebSocket(`${wsUrl}/ws?token=${token}`);
+
+    ws.onopen = () => {
       console.log('WebSocket connected');
       setConnected(true);
-    });
+    };
 
-    newSocket.on('disconnect', () => {
+    ws.onclose = () => {
       console.log('WebSocket disconnected');
       setConnected(false);
-    });
+    };
 
-    setSocket(newSocket);
+    ws.onerror = (err) => {
+      console.error('WebSocket error', err);
+    };
+
+    setSocket(ws);
 
     return () => {
-      newSocket.disconnect();
+      ws.close();
     };
   }, [token]);
 
