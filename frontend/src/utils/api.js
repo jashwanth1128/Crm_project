@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API_BASE = `${process.env.REACT_APP_API_URL}/api`;
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
@@ -9,52 +9,52 @@ const getAuthHeader = () => {
 
 export const api = {
   // Customers
-  getCustomers: (params) => 
+  getCustomers: (params) =>
     axios.get(`${API_BASE}/customers`, { headers: getAuthHeader(), params }),
-  getCustomer: (id) => 
+  getCustomer: (id) =>
     axios.get(`${API_BASE}/customers/${id}`, { headers: getAuthHeader() }),
-  createCustomer: (data) => 
+  createCustomer: (data) =>
     axios.post(`${API_BASE}/customers`, data, { headers: getAuthHeader() }),
-  updateCustomer: (id, data) => 
+  updateCustomer: (id, data) =>
     axios.patch(`${API_BASE}/customers/${id}`, data, { headers: getAuthHeader() }),
-  deleteCustomer: (id) => 
+  deleteCustomer: (id) =>
     axios.delete(`${API_BASE}/customers/${id}`, { headers: getAuthHeader() }),
 
   // Leads
-  getLeads: (params) => 
+  getLeads: (params) =>
     axios.get(`${API_BASE}/leads`, { headers: getAuthHeader(), params }),
-  getLead: (id) => 
+  getLead: (id) =>
     axios.get(`${API_BASE}/leads/${id}`, { headers: getAuthHeader() }),
-  createLead: (data) => 
+  createLead: (data) =>
     axios.post(`${API_BASE}/leads`, data, { headers: getAuthHeader() }),
-  updateLead: (id, data) => 
+  updateLead: (id, data) =>
     axios.patch(`${API_BASE}/leads/${id}`, data, { headers: getAuthHeader() }),
-  deleteLead: (id) => 
+  deleteLead: (id) =>
     axios.delete(`${API_BASE}/leads/${id}`, { headers: getAuthHeader() }),
-  getLeadStats: () => 
+  getLeadStats: () =>
     axios.get(`${API_BASE}/leads/stats/overview`, { headers: getAuthHeader() }),
 
   // Activities
-  getActivities: (params) => 
+  getActivities: (params) =>
     axios.get(`${API_BASE}/activities`, { headers: getAuthHeader(), params }),
-  createActivity: (data) => 
+  createActivity: (data) =>
     axios.post(`${API_BASE}/activities`, data, { headers: getAuthHeader() }),
 
   // Notifications
-  getNotifications: (params) => 
+  getNotifications: (params) =>
     axios.get(`${API_BASE}/notifications`, { headers: getAuthHeader(), params }),
-  markNotificationRead: (id) => 
+  markNotificationRead: (id) =>
     axios.patch(`${API_BASE}/notifications/${id}/read`, {}, { headers: getAuthHeader() }),
-  markAllNotificationsRead: () => 
+  markAllNotificationsRead: () =>
     axios.post(`${API_BASE}/notifications/read-all`, {}, { headers: getAuthHeader() }),
 
   // Users
-  getUsers: () => 
+  getUsers: () =>
     axios.get(`${API_BASE}/users`, { headers: getAuthHeader() }),
-  updateUser: (id, data) => 
+  updateUser: (id, data) =>
     axios.patch(`${API_BASE}/users/${id}`, data, { headers: getAuthHeader() }),
 
   // Audit Logs
-  getAuditLogs: (params) => 
+  getAuditLogs: (params) =>
     axios.get(`${API_BASE}/audit-logs`, { headers: getAuthHeader(), params }),
 };

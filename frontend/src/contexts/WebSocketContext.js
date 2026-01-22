@@ -18,7 +18,7 @@ export const WebSocketProvider = ({ children }) => {
       return;
     }
 
-    const wsUrl = process.env.REACT_APP_BACKEND_URL
+    const wsUrl = process.env.REACT_APP_API_URL
       .replace('https', 'wss')
       .replace('http', 'ws');
 
