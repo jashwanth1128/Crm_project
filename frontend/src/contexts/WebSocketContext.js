@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 const WebSocketContext = createContext(null);
@@ -11,40 +12,41 @@ export const WebSocketProvider = ({ children }) => {
   useEffect(() => {
     if (!token) {
       if (socket) {
-        socket.close();
+        socket.disconnect();
       }
       setSocket(null);
       setConnected(false);
       return;
     }
 
-    const wsUrl = process.env.REACT_APP_API_URL
-      ? process.env.REACT_APP_API_URL.replace('https', 'wss').replace('http', 'ws')
-      : 'ws://localhost:8000';
+    const socketUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-    const ws = new WebSocket(`${wsUrl}/ws?token=${token}`);
+    // Create socket connection
+    const newSocket = io(socketUrl, {
+      auth: { token },
+      transports: ['websocket', 'polling'] // Fallback to polling if websocket fails
+    });
 
-    ws.onopen = () => {
-      console.log('WebSocket connected');
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Socket.io connected');
       setConnected(true);
-    };
+    });
 
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
+    newSocket.on('disconnect', () => {
+      console.log('Socket.io disconnected');
       setConnected(false);
-    };
+    });
 
-    ws.onerror = (err) => {
-      console.error('WebSocket error', err);
-    };
-
-    setSocket(ws);
+    newSocket.on('connect_error', (err) => {
+      console.error('Socket.io connection error:', err);
+    });
 
     return () => {
-      if (ws.readyState === 1) { // OPEN
-        ws.close();
-      }
+      newSocket.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   return (
