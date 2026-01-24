@@ -60,7 +60,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "set CI=false && craco build",
+    "build": "CI=false craco build",
     "test": "craco test"
   },
   "browserslist": {
