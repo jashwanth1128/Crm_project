@@ -29,7 +29,8 @@ export default function LoginPage() {
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      const msg = error.response?.data?.message || error.response?.data?.detail || 'Login failed';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,8 @@ export default function LoginPage() {
         navigate('/dashboard');
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      const msg = error.response?.data?.message || error.response?.data?.detail || 'Registration failed';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
