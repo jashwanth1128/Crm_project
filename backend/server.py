@@ -14,9 +14,39 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 import json
 from enum import Enum
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from pydantic import EmailStr, BaseModel
+import random
+import string
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Email Configuration
+conf = ConnectionConfig(
+    MAIL_USERNAME=os.environ.get("MAIL_USERNAME", "replace_me"),
+    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD", "replace_me"),
+    MAIL_FROM=os.environ.get("MAIL_USERNAME", "noreply@crm.com"),
+    MAIL_PORT=587,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True
+)
+
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
+
+async def send_verification_email(email: EmailStr, otp: str):
+    message = MessageSchema(
+        subject="CRM - Verify your email",
+        recipients=[email],
+        body=f"Your verification code is: {otp}",
+        subtype=MessageType.html
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message)
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -28,7 +58,61 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_DAYS = 7
 security = HTTPBearer()
+
+# Email Configuration
+conf = ConnectionConfig(
+    MAIL_USERNAME=os.environ.get("MAIL_USERNAME", "replace_me"),
+    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD", "replace_me"),
+    MAIL_FROM=os.environ.get("MAIL_USERNAME", "noreply@crm.com"),
+    MAIL_PORT=587,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True
+)
+
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
+
+async def send_verification_email(email: EmailStr, otp: str):
+    message = MessageSchema(
+        subject="CRM - Verify your email",
+        recipients=[email],
+        body=f"Your verification code is: {otp}",
+        subtype=MessageType.html
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message)
+
+# Email Configuration
+conf = ConnectionConfig(
+    MAIL_USERNAME=os.environ.get("MAIL_USERNAME", "replace_me"),
+    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD", "replace_me"),
+    MAIL_FROM=os.environ.get("MAIL_USERNAME", "noreply@crm.com"),
+    MAIL_PORT=587,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True
+)
+
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
+
+async def send_verification_email(email: EmailStr, otp: str):
+    message = MessageSchema(
+        subject="CRM - Verify your email",
+        recipients=[email],
+        body=f"Your verification code is: {otp}",
+        subtype=MessageType.html
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message)
 
 # Create the main app
 app = FastAPI()
@@ -141,7 +225,10 @@ class User(UserBase):
     last_seen: datetime
     dark_mode: bool = False
     created_at: datetime
+    created_at: datetime
     updated_at: datetime
+    is_verified: bool = False
+    otp: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
@@ -151,6 +238,10 @@ class Token(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+class VerifyEmailRequest(BaseModel):
+    email: EmailStr
+    otp: str
 
 class CustomerBase(BaseModel):
     name: str
@@ -321,8 +412,82 @@ async def register(user_data: UserCreate):
     
     # Create user
     user_dict = user_data.model_dump()
-    # ...
+    
+    # Hash password
+    hashed_password = get_password_hash(user_dict["password"])
+    user_dict["password"] = hashed_password
+    
+    # Add metadata
+    user_dict["id"] = str(uuid.uuid4())
+    user_dict["status"] = UserStatus.INACTIVE # Default to INACTIVE until verified
+    user_dict["is_online"] = False
+    
+    # Generate OTP
+    otp = generate_otp()
+    user_dict["otp"] = otp
+    user_dict["is_verified"] = False
+    
+    user_dict["last_seen"] = datetime.now(timezone.utc).isoformat()
+    user_dict["created_at"] = datetime.now(timezone.utc).isoformat()
+    user_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    # Insert user
+    await db.users.insert_one(user_dict)
+    
+    # Send OTP
+    try:
+        await send_verification_email(user_data.email, otp)
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        # Ideally rollback or allow retry, but for now we proceed
+    
+    return {
+        "access_token": "", # No token yet
+        "token_type": "bearer", 
+        "user": {
+            "id": user_dict["id"],
+            "email": user_dict["email"],
+            "first_name": user_dict["first_name"],
+            "last_name": user_dict["last_name"],
+            "role": user_dict["role"],
+            "status": user_dict["status"],
+            "is_verified": False,
+            "created_at": datetime.fromisoformat(user_dict["created_at"]),
+            "updated_at": datetime.fromisoformat(user_dict["created_at"]),
+            "last_seen": datetime.fromisoformat(user_dict["last_seen"])
+        }
+    }
 
+@api_router.post("/auth/verify-email", response_model=Token)
+async def verify_email(verify_data: VerifyEmailRequest):
+    user = await db.users.find_one({"email": verify_data.email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if user.get("otp") != verify_data.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+    # Activate user
+    await db.users.update_one(
+        {"email": verify_data.email},
+        {"$set": {"status": UserStatus.ACTIVE, "is_verified": True, "otp": None}}
+    )
+    
+    # Login (Create token)
+    access_token = create_access_token({"sub": user["id"]})
+    
+    # Prepare response
+    user_response = {k: v for k, v in user.items() if k != "password" and k != "otp"}
+    user_response["status"] = UserStatus.ACTIVE
+    user_response["last_seen"] = datetime.fromisoformat(user_response["last_seen"])
+    user_response["created_at"] = datetime.fromisoformat(user_response["created_at"])
+    user_response["updated_at"] = datetime.fromisoformat(user_response["updated_at"])
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user_response
+    }
 @api_router.post("/auth/login", response_model=Token)
 async def login(login_data: LoginRequest):
     user = await db.users.find_one({"email": login_data.email}, {"_id": 0})

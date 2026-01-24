@@ -5,6 +5,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { Toaster } from './components/ui/sonner';
 import LoginPage from './pages/LoginPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import Dashboard from './pages/Dashboard';
 import CustomersPage from './pages/CustomersPage';
 import LeadsPage from './pages/LeadsPage';
@@ -58,6 +59,14 @@ function App() {
                 element={
                   <PublicRoute>
                     <LoginPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/verify-email"
+                element={
+                  <PublicRoute>
+                    <VerifyEmailPage />
                   </PublicRoute>
                 }
               />

@@ -4,11 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { toast } from 'sonner';
-import { Building2 } from 'lucide-react';
+import { Building2, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [loginEmail, setLoginEmail] = useState('');
@@ -40,9 +39,14 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await register(registerEmail, registerPassword, firstName, lastName, role);
-      toast.success('Account created successfully!');
-      navigate('/dashboard');
+      const data = await register(registerEmail, registerPassword, firstName, lastName, role);
+      if (!data.access_token) {
+        toast.success('Account created! Please verify your email.');
+        navigate('/verify-email', { state: { email: registerEmail } });
+      } else {
+        toast.success('Account created successfully!');
+        navigate('/dashboard');
+      }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
     } finally {
@@ -51,29 +55,52 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4" data-testid="login-page">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-md bg-primary text-primary-foreground mb-4">
-            <Building2 className="w-8 h-8" />
+    <div className="min-h-screen flex w-full" data-testid="login-page">
+      {/* Left side - Visual */}
+      <div className="hidden lg:flex w-1/2 bg-black text-white p-12 flex-col justify-between relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black z-0"></div>
+        <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500 via-transparent to-transparent"></div>
+
+        <div className="relative z-10 flex items-center space-x-2">
+          <div className="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+            <Building2 className="w-6 h-6" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">CRM Pro</h1>
-          <p className="text-muted-foreground mt-2">Manage your customer relationships</p>
+          <span className="text-xl font-bold font-outfit">CRM Pro</span>
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login" data-testid="login-tab">Login</TabsTrigger>
-            <TabsTrigger value="register" data-testid="register-tab">Register</TabsTrigger>
-          </TabsList>
+        <div className="relative z-10 max-w-lg">
+          <h2 className="text-5xl font-bold font-outfit mb-6 leading-tight">Manage relationships like a pro.</h2>
+          <p className="text-gray-400 text-lg">Streamline your sales pipeline, track leads, and close deals faster with our premium CRM solution.</p>
+        </div>
 
-          <TabsContent value="login">
-            <Card>
-              <CardHeader>
-                <CardTitle>Welcome back</CardTitle>
-                <CardDescription>Enter your credentials to access your account</CardDescription>
-              </CardHeader>
-              <CardContent>
+        <div className="relative z-10 text-sm text-gray-500">
+          © 2024 CRM Pro Inc.
+        </div>
+      </div>
+
+      {/* Right side - Form */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-background">
+        <div className="w-full max-w-md space-y-8 animate-in">
+          <div className="lg:hidden text-center mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-primary-foreground mb-4">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight">CRM Pro</h1>
+          </div>
+
+          <div className="glass-card p-8 rounded-2xl border border-border/50 shadow-xl">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold tracking-tight">Get Started</h2>
+              <p className="text-sm text-muted-foreground">Enter your details below to access your account</p>
+            </div>
+
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="login" data-testid="login-tab">Login</TabsTrigger>
+                <TabsTrigger value="register" data-testid="register-tab">Register</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="login" className="space-y-4">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
@@ -81,14 +108,18 @@ export default function LoginPage() {
                       id="login-email"
                       data-testid="login-email-input"
                       type="email"
-                      placeholder="admin@crm.com"
+                      placeholder="name@example.com"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
+                      className="bg-background/50"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-password">Password</Label>
+                      <span className="text-xs text-primary cursor-pointer hover:underline">Forgot password?</span>
+                    </div>
                     <Input
                       id="login-password"
                       data-testid="login-password-input"
@@ -97,26 +128,20 @@ export default function LoginPage() {
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
+                      className="bg-background/50"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading} data-testid="login-submit-btn">
-                    {loading ? 'Logging in...' : 'Login'}
+                  <Button type="submit" className="w-full h-11" disabled={loading} data-testid="login-submit-btn">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    {loading ? 'Logging in...' : 'Sign In'}
                   </Button>
                 </form>
-                <div className="mt-4 text-sm text-muted-foreground text-center">
-                  Demo: admin@crm.com / admin123
+                <div className="mt-4 text-xs text-muted-foreground text-center bg-secondary/50 p-2 rounded-md">
+                  Demo Credentials: admin@crm.com / admin123
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </TabsContent>
 
-          <TabsContent value="register">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create account</CardTitle>
-                <CardDescription>Register a new account to get started</CardDescription>
-              </CardHeader>
-              <CardContent>
+              <TabsContent value="register" className="space-y-4">
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -127,6 +152,7 @@ export default function LoginPage() {
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         required
+                        className="bg-background/50"
                       />
                     </div>
                     <div className="space-y-2">
@@ -137,6 +163,7 @@ export default function LoginPage() {
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         required
+                        className="bg-background/50"
                       />
                     </div>
                   </div>
@@ -149,6 +176,7 @@ export default function LoginPage() {
                       value={registerEmail}
                       onChange={(e) => setRegisterEmail(e.target.value)}
                       required
+                      className="bg-background/50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -160,12 +188,13 @@ export default function LoginPage() {
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
                       required
+                      className="bg-background/50"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
                     <Select value={role} onValueChange={setRole}>
-                      <SelectTrigger data-testid="register-role-select">
+                      <SelectTrigger data-testid="register-role-select" className="bg-background/50">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -175,14 +204,15 @@ export default function LoginPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading} data-testid="register-submit-btn">
+                  <Button type="submit" className="w-full h-11" disabled={loading} data-testid="register-submit-btn">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
                 </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </div>
     </div>
   );

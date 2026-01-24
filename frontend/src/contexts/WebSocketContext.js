@@ -12,15 +12,15 @@ export const WebSocketProvider = ({ children }) => {
     if (!token) {
       if (socket) {
         socket.close();
-        setSocket(null);
-        setConnected(false);
       }
+      setSocket(null);
+      setConnected(false);
       return;
     }
 
     const wsUrl = process.env.REACT_APP_API_URL
-      .replace('https', 'wss')
-      .replace('http', 'ws');
+      ? process.env.REACT_APP_API_URL.replace('https', 'wss').replace('http', 'ws')
+      : 'ws://localhost:8000';
 
     const ws = new WebSocket(`${wsUrl}/ws?token=${token}`);
 
@@ -41,7 +41,9 @@ export const WebSocketProvider = ({ children }) => {
     setSocket(ws);
 
     return () => {
-      ws.close();
+      if (ws.readyState === 1) { // OPEN
+        ws.close();
+      }
     };
   }, [token]);
 

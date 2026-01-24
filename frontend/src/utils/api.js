@@ -8,17 +8,41 @@ const getAuthHeader = () => {
 };
 
 export const api = {
-  // Customers
-  getCustomers: (params) =>
+  // Accounts (mapped to Customers)
+  getAccounts: (params) =>
     axios.get(`${API_BASE}/customers`, { headers: getAuthHeader(), params }),
-  getCustomer: (id) =>
+  getAccount: (id) =>
     axios.get(`${API_BASE}/customers/${id}`, { headers: getAuthHeader() }),
-  createCustomer: (data) =>
+  createAccount: (data) =>
     axios.post(`${API_BASE}/customers`, data, { headers: getAuthHeader() }),
-  updateCustomer: (id, data) =>
+  updateAccount: (id, data) =>
     axios.patch(`${API_BASE}/customers/${id}`, data, { headers: getAuthHeader() }),
-  deleteCustomer: (id) =>
+  deleteAccount: (id) =>
     axios.delete(`${API_BASE}/customers/${id}`, { headers: getAuthHeader() }),
+
+  // Contacts (mapped to Customers for now as they are similar entities in this simple CRM)
+  getContacts: (params) =>
+    axios.get(`${API_BASE}/customers`, { headers: getAuthHeader(), params }),
+  getContact: (id) =>
+    axios.get(`${API_BASE}/customers/${id}`, { headers: getAuthHeader() }),
+  createContact: (data) =>
+    axios.post(`${API_BASE}/customers`, data, { headers: getAuthHeader() }),
+  updateContact: (id, data) =>
+    axios.patch(`${API_BASE}/customers/${id}`, data, { headers: getAuthHeader() }),
+  deleteContact: (id) =>
+    axios.delete(`${API_BASE}/customers/${id}`, { headers: getAuthHeader() }),
+
+  // Deals (mapped to Leads)
+  getDeals: (params) =>
+    axios.get(`${API_BASE}/leads`, { headers: getAuthHeader(), params }),
+  getDeal: (id) =>
+    axios.get(`${API_BASE}/leads/${id}`, { headers: getAuthHeader() }),
+  createDeal: (data) =>
+    axios.post(`${API_BASE}/leads`, data, { headers: getAuthHeader() }),
+  updateDeal: (id, data) =>
+    axios.patch(`${API_BASE}/leads/${id}`, data, { headers: getAuthHeader() }),
+  deleteDeal: (id) =>
+    axios.delete(`${API_BASE}/leads/${id}`, { headers: getAuthHeader() }),
 
   // Leads
   getLeads: (params) =>
@@ -31,8 +55,9 @@ export const api = {
     axios.patch(`${API_BASE}/leads/${id}`, data, { headers: getAuthHeader() }),
   deleteLead: (id) =>
     axios.delete(`${API_BASE}/leads/${id}`, { headers: getAuthHeader() }),
-  getLeadStats: () =>
-    axios.get(`${API_BASE}/leads/stats/overview`, { headers: getAuthHeader() }),
+  // Updated Convert Endpoint to just patch status
+  convertLead: (id) =>
+    axios.patch(`${API_BASE}/leads/${id}`, { status: 'CONVERTED' }, { headers: getAuthHeader() }),
 
   // Activities
   getActivities: (params) =>
@@ -56,5 +81,5 @@ export const api = {
 
   // Audit Logs
   getAuditLogs: (params) =>
-    axios.get(`${API_BASE}/audit-logs`, { headers: getAuthHeader(), params }),
+    axios.get(`${API_BASE}/admin/audit-logs`, { headers: getAuthHeader(), params }),
 };
